@@ -1,60 +1,48 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
-using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
-using Darwin.Data.Models;
-using Google.Apis.Auth;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.JsonWebTokens;
-using Microsoft.IdentityModel.Tokens;
-using JwtRegisteredClaimNames = Microsoft.IdentityModel.JsonWebTokens.JwtRegisteredClaimNames;
-
-namespace Darwin.WebApi.Controllers
+﻿namespace Darwin.WebApi.Controllers
 {
+    using System;
+    using System.IdentityModel.Tokens.Jwt;
+    using System.Security.Claims;
+    using System.Text;
+    using System.Threading.Tasks;
+    using Darwin.Services.Authorization;
+    using Microsoft.AspNetCore.Authentication.JwtBearer;
+    using Microsoft.AspNetCore.Authorization;
+    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.Extensions.Configuration;
+    using Microsoft.IdentityModel.Tokens;
+    using JwtRegisteredClaimNames = Microsoft.IdentityModel.JsonWebTokens.JwtRegisteredClaimNames;
+
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     [ApiController]
     public class AuthController : ControllerBase
     {
-        private readonly IConfiguration configuration;
+        private IConfigurationRoot configuration { get; }
 
-        public AuthController(IConfiguration configuration)
+        private IAuthService authService { get; }
+
+        public AuthController(IConfigurationRoot configuration, IAuthService authService)
         {
             this.configuration = configuration;
-        }
-
-        [HttpGet]
-        public string Get()
-        {
-            return "Booyah!!!";
+            this.authService = authService;
         }
 
         [AllowAnonymous]
-        [HttpPost("google")]
+        [HttpPost]
         public async Task<IActionResult> Google([FromBody]ProviderToken providerToken)
         {
             try
             {
-                var payload = await GoogleJsonWebSignature.ValidateAsync(providerToken.IdToken, new GoogleJsonWebSignature.ValidationSettings
+                var identityProviderUser = await this.authService.GetAuthorizedUser(new IdentityProviderResponse
                 {
-                    Audience = new List<string>
-                    {
-                        configuration["AppSettings:GoogleClientId"]
-                    }
+                    Provider = IdentityProvider.Google,
+                    AuthorizationCode = providerToken.AuthorizationCode
                 });
 
                 var claims = new[]
                 {
-                    new Claim(JwtRegisteredClaimNames.Email, payload.Email),
-                    new Claim(JwtRegisteredClaimNames.Sub, payload.Subject),
+                    new Claim(JwtRegisteredClaimNames.Sub, identityProviderUser.UserId),
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
                 };
 
@@ -64,7 +52,7 @@ namespace Darwin.WebApi.Controllers
                 var token = new JwtSecurityToken(string.Empty,
                   string.Empty,
                   claims,
-                  expires: DateTime.Now.AddSeconds(55 * 60),
+                  expires: DateTime.Now.AddDays(1),
                   signingCredentials: creds);
 
                 return Ok(
