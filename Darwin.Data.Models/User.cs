@@ -6,6 +6,13 @@
 
     public class User : TableEntity
     {
+        public string UserId => this.PartitionKey;
+        public string UserName => this.RowKey;
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string EmailAddress { get; set; }
+        public string ProfilePhotoUrl { get; set; }
+
         public User()
         {
 
@@ -20,17 +27,5 @@
             this.EmailAddress = emailAddress;
             this.ProfilePhotoUrl = profilePhotoUri;
         }
-
-        public string UserId => this.PartitionKey;
-
-        public string UserName => this.RowKey;
-
-        public string FirstName { get; set; }
-
-        public string LastName { get; set; }
-
-        public string EmailAddress { get; set; }
-
-        public string ProfilePhotoUrl { get; set; }
     }
 }

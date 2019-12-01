@@ -6,6 +6,8 @@
 
     public class IdentityProviderUser : TableEntity
     {
+        public string UserId { get; set; }
+
         public IdentityProviderUser()
         {
 
@@ -17,7 +19,5 @@
             this.RowKey = idTokenId;
             this.UserId = userId;
         }
-
-        public string UserId { get; set; }
     }
 }

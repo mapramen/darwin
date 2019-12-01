@@ -13,9 +13,7 @@
     public class AuthService : IAuthService
     {
         private IConfigurationRoot configuration { get; }
-
         private CloudTable identityProviderUsersTable { get; }
-
         private CloudTable usersTable { get; }
 
         public AuthService(IConfigurationRoot configuration, CloudTable identityProviderUsersTable, CloudTable usersTable)

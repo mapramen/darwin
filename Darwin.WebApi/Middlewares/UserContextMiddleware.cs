@@ -29,7 +29,6 @@
         private UserContext ExtractUserContext(HttpContext context)
         {
             var claims = context.User.Claims;
-
             return new UserContext(claims.First(x => x.Type == ClaimTypes.NameIdentifier).Value);
         }
     }

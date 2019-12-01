@@ -19,7 +19,6 @@
     public class UserController : ControllerBase
     {
         private CloudTable usersTable { get; }
-
         private IMapper mapper { get; }
 
         public UserController([KeyFilter(StoreConstants.TableNames.Users)] CloudTable usersTable, IMapper mapper)
