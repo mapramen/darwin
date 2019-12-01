@@ -1,4 +1,4 @@
-﻿namespace Darwin.WebApi.AutofacRegistrations
+﻿namespace Darwin.WebApi.Mappers
 {
     using AutoMapper;
 
